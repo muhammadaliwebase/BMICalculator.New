@@ -1,0 +1,421 @@
+<Window x:Class="BMICalculator.App.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:viewmodels="clr-namespace:BMICalculator.App.ViewModels"
+        mc:Ignorable="d"
+        Title="BMI Calculator - Health Monitoring" Height="850" Width="1200"
+        MinHeight="600" MinWidth="900"
+        Background="WhiteSmoke"
+        WindowStartupLocation="CenterScreen">
+    <Window.Resources>
+        <Style x:Key="ModernButton" TargetType="Button">
+            <Setter Property="Background" Value="#1E88E5"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Padding" Value="20,10"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                CornerRadius="5"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#1976D2"/>
+                </Trigger>
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="Background" Value="#BDBDBD"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="SaveButton" TargetType="Button" BasedOn="{StaticResource ModernButton}">
+            <Setter Property="Background" Value="#43A047"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#388E3C"/>
+                </Trigger>
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="Background" Value="#BDBDBD"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="ModernTextBox" TargetType="TextBox">
+            <Setter Property="FontSize" Value="48"/>
+            <Setter Property="Padding" Value="10,8"/>
+            <Setter Property="BorderBrush" Value="#A6FF93"/>
+            <Setter Property="Foreground" Value="#4EFF26"/>
+            <Setter Property="FontWeight" Value="ExtraBold"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="Background" Value="White"/>
+        </Style>
+
+        <Style x:Key="ModernComboBox" TargetType="ComboBox">
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Padding" Value="11,8"/>
+            <Setter Property="BorderBrush" Value="#CCCCCC"/>
+            <Setter Property="BorderThickness" Value="1"/>
+        </Style>
+
+        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" MinWidth="400"/>
+            <ColumnDefinition Width="320"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Main Calculator Panel -->
+        <Border Grid.Column="0" Background="#EBCDF4" Margin="20" CornerRadius="10">
+            <Border.Effect>
+                <DropShadowEffect Color="Black" BlurRadius="15" ShadowDepth="10" Opacity="0.4"/>
+            </Border.Effect>
+            <Grid Margin="30">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*" MinHeight="200"/>
+                </Grid.RowDefinitions>
+
+                <!-- Title and Person Info -->
+                <Grid Grid.Row="0" Margin="0,0,0,15">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="BMI Calculator" FontSize="32" FontWeight="Bold"/>
+
+                    <!-- Current Person Info -->
+                    <Border Grid.Column="1" Background="#E1BEE7" CornerRadius="8" Padding="15,8"
+                            Visibility="{Binding HasCurrentPerson, Converter={StaticResource BoolToVis}}">
+                        <StackPanel Orientation="Horizontal">
+                            <Ellipse Width="40" Height="40" Fill="#7B1FA2" Margin="0,0,10,0">
+                                <Ellipse.Effect>
+                                    <DropShadowEffect BlurRadius="5" Opacity="0.3"/>
+                                </Ellipse.Effect>
+                            </Ellipse>
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock Text="{Binding CurrentPersonName}" FontSize="14" FontWeight="Bold"/>
+                                <TextBlock Text="{Binding CurrentPersonPosition}" FontSize="11" Foreground="#666"/>
+                            </StackPanel>
+                            <Button Content="X" Command="{Binding ClearPersonCommand}"
+                                    Background="Transparent" Foreground="#999"
+                                    BorderThickness="0" Cursor="Hand" Margin="15,0,0,0"
+                                    FontSize="16" FontWeight="Bold" VerticalAlignment="Top"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+
+                <!-- Height Input -->
+                <StackPanel Grid.Row="1" Margin="0,0,0,15">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="120"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBox Grid.Column="0" Text="{Binding Height, UpdateSourceTrigger=PropertyChanged}"
+                             IsReadOnly="True"
+                             FontFamily="{StaticResource SevenSegmentFont}"
+                             Margin="0,0,10,0"
+                             TextAlignment="Center"
+                             Style="{StaticResource ModernTextBox}">
+                            <TextBox.Template>
+                                <ControlTemplate TargetType="TextBox">
+                                    <Border CornerRadius="12"
+                                        Background="{TemplateBinding Background}"
+                                        BorderBrush="{TemplateBinding BorderBrush}"
+                                        BorderThickness="{TemplateBinding BorderThickness}">
+                                        <ScrollViewer Margin="0" x:Name="PART_ContentHost"/>
+                                    </Border>
+                                </ControlTemplate>
+                            </TextBox.Template>
+                        </TextBox>
+                        <ComboBox Grid.Column="1"
+                              SelectedIndex="0"
+                              Style="{StaticResource ModernComboBox}"
+                              HorizontalContentAlignment="Center"
+                              Background="Black">
+                            <ComboBoxItem Content="HEIGHT (sm)"/>
+                        </ComboBox>
+                    </Grid>
+                </StackPanel>
+
+                <!-- Weight Input -->
+                <StackPanel Grid.Row="2" Margin="0,0,0,20">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="120"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBox Grid.Column="0" Text="{Binding Weight, UpdateSourceTrigger=PropertyChanged}"
+                                 IsReadOnly="True"
+                                 FontFamily="{StaticResource SevenSegmentFont}"
+                                 Margin="0,0,10,0"
+                                 TextAlignment="Center"
+                                 Style="{StaticResource ModernTextBox}">
+                            <TextBox.Template>
+                                <ControlTemplate TargetType="TextBox">
+                                    <Border CornerRadius="12"
+                                        Background="{TemplateBinding Background}"
+                                        BorderBrush="{TemplateBinding BorderBrush}"
+                                        BorderThickness="{TemplateBinding BorderThickness}">
+                                        <ScrollViewer Margin="0" x:Name="PART_ContentHost"/>
+                                    </Border>
+                                </ControlTemplate>
+                            </TextBox.Template>
+                        </TextBox>
+                        <ComboBox Grid.Column="1" SelectedIndex="0" Style="{StaticResource ModernComboBox}">
+                            <ComboBoxItem Content="WEIGHT (kg)"/>
+                        </ComboBox>
+                    </Grid>
+                </StackPanel>
+
+                <!-- BMI Comparison Section -->
+                <Border Grid.Row="3" Background="#F3E5F5" CornerRadius="8" Padding="15" Margin="0,0,0,15"
+                        Visibility="{Binding HasOldBmi, Converter={StaticResource BoolToVis}}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Old BMI -->
+                        <StackPanel Grid.Column="0" HorizontalAlignment="Center">
+                            <TextBlock Text="Oldingi BMI" FontSize="12" Foreground="#666" HorizontalAlignment="Center"/>
+                            <TextBlock Text="{Binding OldBmi, StringFormat='{}{0:F2}'}" FontSize="28" FontWeight="Bold"
+                                       Foreground="#7B1FA2" HorizontalAlignment="Center"/>
+                            <TextBlock Text="{Binding OldBmiCategory}" FontSize="11" Foreground="#999" HorizontalAlignment="Center"/>
+                            <TextBlock FontSize="10" Foreground="#999" HorizontalAlignment="Center" Margin="0,5,0,0">
+                                <Run Text="Vazn: "/><Run Text="{Binding OldWeight, StringFormat='{}{0:F1}'}" FontWeight="SemiBold"/><Run Text=" kg"/>
+                            </TextBlock>
+                        </StackPanel>
+
+                        <!-- Change Arrow -->
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="20,0">
+                            <TextBlock Text="→" FontSize="32" Foreground="#9C27B0" HorizontalAlignment="Center"/>
+                            <Border Background="{Binding BmiChangeColor}" CornerRadius="10" Padding="8,4">
+                                <TextBlock Text="{Binding BmiChangeText}" FontSize="14" FontWeight="Bold"
+                                           Foreground="White" HorizontalAlignment="Center"/>
+                            </Border>
+                        </StackPanel>
+
+                        <!-- New BMI -->
+                        <StackPanel Grid.Column="2" HorizontalAlignment="Center">
+                            <TextBlock Text="Yangi BMI" FontSize="12" Foreground="#666" HorizontalAlignment="Center"/>
+                            <TextBlock Text="{Binding BMI, StringFormat='{}{0:F2}'}" FontSize="28" FontWeight="Bold"
+                                       Foreground="{Binding CategoryColor}" HorizontalAlignment="Center"/>
+                            <TextBlock Text="{Binding BMICategory}" FontSize="11" Foreground="#999" HorizontalAlignment="Center"/>
+                            <TextBlock FontSize="10" Foreground="#999" HorizontalAlignment="Center" Margin="0,5,0,0">
+                                <Run Text="Vazn: "/><Run Text="{Binding Weight, StringFormat='{}{0:F1}'}" FontWeight="SemiBold"/><Run Text=" kg"/>
+                            </TextBlock>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <!-- BMI Result Display -->
+                <Grid Grid.Row="4" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- BMI Info -->
+                    <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,30,0" MaxWidth="280">
+                        <TextBlock FontSize="18" Margin="0,0,0,10" TextWrapping="Wrap">
+                            <Run Text="Your BMI is " FontWeight="Normal"/>
+                            <Run Text="{Binding BMI, StringFormat='{}{0:F2}'}" FontWeight="Bold"/>
+                            <Run Text=" Kg/m2" FontWeight="Normal"/>
+                        </TextBlock>
+
+                        <TextBlock Text="{Binding BMICategory}" FontSize="22" FontWeight="Bold"
+                                   Foreground="{Binding CategoryColor}" Margin="0,0,0,20"/>
+
+                        <!-- Legend -->
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,5">
+                                <Ellipse Width="15" Height="15" Fill="#178AD5" Margin="0,0,10,0"/>
+                                <TextBlock Text="Underweight (&lt;18.5)" FontSize="12"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,5">
+                                <Ellipse Width="15" Height="15" Fill="#66BB6A" Margin="0,0,10,0"/>
+                                <TextBlock Text="Normal (18.5-24.9)" FontSize="12"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,5">
+                                <Ellipse Width="15" Height="15" Fill="#FFA726" Margin="0,0,10,0"/>
+                                <TextBlock Text="Overweight (25-29.9)" FontSize="12"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,5">
+                                <Ellipse Width="15" Height="15" Fill="#EF5350" Margin="0,0,10,0"/>
+                                <TextBlock Text="Obese (30+)" FontSize="12"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!-- BMI Gauge -->
+                    <Viewbox Grid.Column="1" MaxWidth="350" MaxHeight="350" VerticalAlignment="Top" HorizontalAlignment="Center" Margin="10" Stretch="Uniform">
+                        <Canvas Width="300" VerticalAlignment="Top" HorizontalAlignment="Center" Height="220">
+                            <!-- Background Arc -->
+                            <Path Stroke="#E0E0E0" StrokeThickness="30" StrokeStartLineCap="Round" StrokeEndLineCap="Round">
+                                <Path.Data>
+                                    <PathGeometry>
+                                        <PathFigure StartPoint="40,180">
+                                            <ArcSegment Point="260,180" Size="110,110" SweepDirection="Clockwise" IsLargeArc="False"/>
+                                        </PathFigure>
+                                    </PathGeometry>
+                                </Path.Data>
+                            </Path>
+
+                            <!-- Colored Sections -->
+                            <!-- Underweight (Blue) -->
+                            <Path Stroke="#178AD5" StrokeThickness="30" StrokeStartLineCap="Round">
+                                <Path.Data>
+                                    <PathGeometry>
+                                        <PathFigure StartPoint="40,180">
+                                            <ArcSegment Point="75,99" Size="110,109" SweepDirection="Clockwise"/>
+                                        </PathFigure>
+                                    </PathGeometry>
+                                </Path.Data>
+                            </Path>
+
+                            <!-- Normal (Green) -->
+                            <Path Stroke="#66BB6A" StrokeThickness="30">
+                                <Path.Data>
+                                    <PathGeometry>
+                                        <PathFigure StartPoint="75,99">
+                                            <ArcSegment Point="150,70" Size="110,110" SweepDirection="Clockwise"/>
+                                        </PathFigure>
+                                    </PathGeometry>
+                                </Path.Data>
+                            </Path>
+
+                            <!-- Overweight (Orange) -->
+                            <Path Stroke="#FFA726" StrokeThickness="30">
+                                <Path.Data>
+                                    <PathGeometry>
+                                        <PathFigure StartPoint="150,70">
+                                            <ArcSegment Point="225,100" Size="110,110" SweepDirection="Clockwise"/>
+                                        </PathFigure>
+                                    </PathGeometry>
+                                </Path.Data>
+                            </Path>
+
+                            <!-- Obese (Red) -->
+                            <Path Stroke="#EF5350" StrokeThickness="30" StrokeStartLineCap="Round">
+                                <Path.Data>
+                                    <PathGeometry>
+                                        <PathFigure StartPoint="260,180">
+                                            <ArcSegment Point="225,100" Size="120,109" SweepDirection="Counterclockwise"/>
+                                        </PathFigure>
+                                    </PathGeometry>
+                                </Path.Data>
+                            </Path>
+
+                            <!-- Center Circle -->
+                            <Ellipse Width="35" Height="35" Fill="#604EFF" Canvas.Left="132.5" Canvas.Top="162.5"/>
+
+                            <!-- Needle Container -->
+                            <Canvas Canvas.Left="150" Canvas.Top="180">
+                                <Line X1="0" Y1="0" X2="0" Y2="-85"
+                                      Stroke="#604EFF"
+                                      StrokeThickness="5"
+                                      StrokeStartLineCap="Round"
+                                      StrokeEndLineCap="Round"
+                                      RenderTransformOrigin="0,0">
+                                    <Line.RenderTransform>
+                                        <RotateTransform Angle="{Binding NeedleAngle}"/>
+                                    </Line.RenderTransform>
+                                </Line>
+                            </Canvas>
+
+                            <!-- BMI Value Text -->
+                            <TextBlock Text="{Binding BMI, StringFormat='{}{0:F2}'}"
+                                       FontSize="28" FontWeight="Bold"
+                                       Canvas.Left="115" Canvas.Top="125"
+                                       Foreground="#604EFF"/>
+                        </Canvas>
+                    </Viewbox>
+                </Grid>
+            </Grid>
+        </Border>
+
+        <!-- Settings Panel -->
+        <Border Grid.Column="1" Background="White" Margin="0,20,20,20" CornerRadius="10">
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="15" ShadowDepth="5" Opacity="0.2"/>
+            </Border.Effect>
+            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                <StackPanel Margin="20">
+                    <!-- FaceID Section -->
+                    <TextBlock Text="FaceID" FontSize="18" FontWeight="Bold" Margin="0,0,0,10"/>
+                    <Border Background="#E8F5E9" CornerRadius="5" Padding="10" Margin="0,0,0,10">
+                        <TextBlock Text="{Binding FaceIdStatus}" TextWrapping="Wrap" FontSize="11" Foreground="#2E7D32"/>
+                    </Border>
+                    <Button Content="{Binding FaceIdButtonText}"
+                            Command="{Binding ToggleFaceIdCommand}"
+                            Style="{StaticResource ModernButton}"
+                            Margin="0,0,0,20"/>
+
+                    <!-- Save Measurement Button -->
+                    <Button Content="SAQLASH"
+                            Command="{Binding SaveMeasurementCommand}"
+                            Style="{StaticResource SaveButton}"
+                            FontSize="16"
+                            Padding="20,15"
+                            Margin="0,0,0,20"
+                            IsEnabled="{Binding CanSaveMeasurement}"/>
+
+                    <!-- Serial Port Section -->
+                    <TextBlock Text="Serial Port" FontSize="18" FontWeight="Bold" Margin="0,0,0,10"/>
+
+                    <TextBlock Text="Port" FontSize="12" Margin="0,0,0,5"/>
+                    <ComboBox ItemsSource="{Binding AvailablePorts}"
+                              SelectedItem="{Binding SelectedPort}"
+                              Style="{StaticResource ModernComboBox}" Margin="0,0,0,15"/>
+
+                    <TextBlock Text="Baud Rate" FontSize="12" Margin="0,0,0,5"/>
+                    <ComboBox SelectedIndex="1" Style="{StaticResource ModernComboBox}" Margin="0,0,0,15">
+                        <ComboBoxItem Content="4800"/>
+                        <ComboBoxItem Content="9600"/>
+                        <ComboBoxItem Content="19200"/>
+                        <ComboBoxItem Content="115200"/>
+                    </ComboBox>
+
+                    <Button Content="{Binding ConnectionButtonText}"
+                            Command="{Binding ToggleConnectionCommand}"
+                            Style="{StaticResource ModernButton}"
+                            Margin="0,10,0,20"/>
+
+                    <!-- Status Section -->
+                    <TextBlock Text="Status" FontSize="12" Margin="0,0,0,5"/>
+                    <Border Background="#F5F5F5" CornerRadius="5" Padding="10" Margin="0,0,0,15">
+                        <TextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap" FontSize="12"/>
+                    </Border>
+
+                    <TextBlock Text="Processing" FontSize="12" Margin="0,0,0,5"/>
+                    <Border Background="#F5F5F5" CornerRadius="5" Padding="10">
+                        <StackPanel>
+                            <TextBlock Text="{Binding ProcessingMessage}" TextWrapping="Wrap" FontSize="12"/>
+                            <ProgressBar Height="5" IsIndeterminate="{Binding IsProcessing}"
+                                         Margin="0,10,0,0" Background="Transparent"/>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
+        </Border>
+    </Grid>
+</Window>

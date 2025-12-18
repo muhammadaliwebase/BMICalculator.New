@@ -1,0 +1,41 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net6.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Assets\BMI-2.png" />
+    <None Remove="Assets\download.jpg" />
+    <None Remove="Assets\Fonts\Seven Segment.ttf" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.IO.Ports" Version="6.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="6.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Assets\BMI-2.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\download.jpg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Resource Include="Assets\Fonts\Seven Segment.ttf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\BMICalculator.Core\BMICalculator.Core.csproj" />
+    <ProjectReference Include="..\BMICalculator.Agent\BMICalculator.Agent.csproj" />
+    <ProjectReference Include="..\BMICalculator.AI\BMICalculator.AI.csproj" />
+    <ProjectReference Include="..\BMICalculator.Statistics\BMICalculator.Statistics.csproj" />
+  </ItemGroup>
+
+</Project>
