@@ -380,13 +380,13 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
     public MainViewModel()
     {
         // Initialize services
-        var faceIdConfig = new FaceIdListenerConfig { ListenPort = 8080 };
+        var faceIdConfig = new FaceIdListenerConfig { ListenPort = 9000 };
         _faceIdListener = new FaceIdListenerService(faceIdConfig);
         _faceIdListener.PersonScanned += OnPersonScanned;
 
         var apiConfig = new ApiConfiguration
         {
-            BaseUrl = "http://wbac-api.apptest.uz",
+            BaseUrl = "https://localhost:7232",// "http://wbac-api.apptest.uz",
             Username = "admin",
             Password = "123456"
         };
@@ -427,7 +427,7 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
                 FaceIdStatus = $"FaceID: Listening on {_faceIdListener.ListenUrl}";
 
                 // Authenticate with API
-                var authenticated = await _apiClient.AuthenticateAsync("Agent001", "123456");
+                var authenticated = await _apiClient.AuthenticateAsync("admin", "123456");
                 if (!authenticated)
                 {
                     FaceIdStatus += " (API auth failed)";

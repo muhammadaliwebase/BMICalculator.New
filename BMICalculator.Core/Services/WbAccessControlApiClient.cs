@@ -33,14 +33,14 @@ public class WbAccessControlApiClient : IWbAccessControlApiClient
         try
         {
             var loginRequest = new { username, password };
-            var response = await _httpClient.PostAsJsonAsync("/api/Auth/Login", loginRequest);
+            var response = await _httpClient.PostAsJsonAsync("/Account/Login", loginRequest);
 
             if (response.IsSuccessStatusCode)
             {
                 var result = await response.Content.ReadFromJsonAsync<AuthResponse>(_jsonOptions);
-                if (result?.AccessToken != null)
+                if (result?.Token != null)
                 {
-                    _accessToken = result.AccessToken;
+                    _accessToken = result.Token;
                     _httpClient.DefaultRequestHeaders.Authorization =
                         new AuthenticationHeaderValue("Bearer", _accessToken);
                     return true;
@@ -171,8 +171,26 @@ public class WbAccessControlApiClient : IWbAccessControlApiClient
 
     private class AuthResponse
     {
-        public string? AccessToken { get; set; }
-        public string? RefreshToken { get; set; }
-        public DateTime? ExpiresAt { get; set; }
+        public string? Token { get; set; }
+        public AuthUserDto? User { get; set; }
+    }
+
+    private class AuthUserDto
+    {
+        public int Id { get; set; }
+        public string? UserName { get; set; }
+        public string? FullName { get; set; }
+        public string? ShortName { get; set; }
+        public int? StateId { get; set; }
+        public int? OrganizationId { get; set; }
+        public string? Organization { get; set; }
+        public string? Email { get; set; }
+        public string? PhoneNumber { get; set; }
+        public int? LanguageId { get; set; }
+        public string? Language { get; set; }
+        public bool IsAdmin { get; set; }
+        public bool IsCentralDefault { get; set; }
+        public List<string>? Roles { get; set; }
+        public List<string>? Permissions { get; set; }
     }
 }

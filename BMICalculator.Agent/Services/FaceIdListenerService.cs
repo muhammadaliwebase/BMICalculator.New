@@ -89,11 +89,15 @@ public class FaceIdListenerService : IFaceIdListenerService, IDisposable
 
     private async Task ListenLoop(CancellationToken cancellationToken)
     {
+        System.Diagnostics.Debug.WriteLine($"[FaceID] ListenLoop started on {ListenUrl}");
+
         while (!cancellationToken.IsCancellationRequested && _listener != null && _listener.IsListening)
         {
             try
             {
+                System.Diagnostics.Debug.WriteLine("[FaceID] Waiting for request...");
                 var context = await _listener.GetContextAsync();
+                System.Diagnostics.Debug.WriteLine("[FaceID] Request received!");
                 _ = ProcessRequestAsync(context);
             }
             catch (HttpListenerException) when (cancellationToken.IsCancellationRequested)
@@ -115,12 +119,22 @@ public class FaceIdListenerService : IFaceIdListenerService, IDisposable
     {
         try
         {
+            System.Diagnostics.Debug.WriteLine($"[FaceID] Request received: {context.Request.HttpMethod} from {context.Request.RemoteEndPoint}");
+
             if (context.Request.HttpMethod == "POST")
             {
                 using var reader = new StreamReader(context.Request.InputStream, Encoding.UTF8);
                 var body = await reader.ReadToEndAsync();
 
-                var scanEvent = ParseHikVisionEvent(body, context.Request.RemoteEndPoint?.Address?.ToString());
+                System.Diagnostics.Debug.WriteLine($"[FaceID] Body: {body}");
+
+                // Extract JSON from multipart/form-data if needed
+                var json = ExtractJsonFromBody(body);
+                System.Diagnostics.Debug.WriteLine($"[FaceID] Extracted JSON: {json}");
+
+                var scanEvent = ParseHikVisionEvent(json, context.Request.RemoteEndPoint?.Address?.ToString());
+                System.Diagnostics.Debug.WriteLine($"[FaceID] ParseResult: {(scanEvent != null ? $"PersonId={scanEvent.PersonId}" : "NULL")}");
+
                 if (scanEvent != null)
                 {
                     OnPersonScanned(scanEvent);
@@ -145,6 +159,26 @@ public class FaceIdListenerService : IFaceIdListenerService, IDisposable
         {
             context.Response.Close();
         }
+    }
+
+    private string ExtractJsonFromBody(string body)
+    {
+        var trimmed = body.Trim();
+
+        // If already JSON, return as-is
+        if (trimmed.StartsWith("{"))
+            return trimmed;
+
+        // Extract JSON from multipart/form-data
+        var startIndex = body.IndexOf('{');
+        var endIndex = body.LastIndexOf('}');
+
+        if (startIndex >= 0 && endIndex > startIndex)
+        {
+            return body.Substring(startIndex, endIndex - startIndex + 1);
+        }
+
+        return body;
     }
 
     private FaceIdScanEvent? ParseHikVisionEvent(string json, string? remoteIp)
